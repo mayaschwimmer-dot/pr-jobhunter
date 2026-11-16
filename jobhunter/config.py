@@ -17,11 +17,11 @@ MAX_ENRICH_PER_RUN = 20       # כמה משרות לינקדאין להעשיר 
 
 # ---------------------------------------------------------------- חיפושים
 # שאילתות ללינקדאין (ציבורי, ללא התחברות)
+# מאוחד עם OR כדי לשלוח מעט בקשות (לינקדאין חוסם שרתי GitHub על ריבוי בקשות - 429)
 LINKEDIN_QUERIES = [
-    "יחסי ציבור", 'יח"צ', "דוברות", "דובר", "דוברת",
-    "public relations", "PR coordinator", "PR account",
-    "communications coordinator", "media relations", "spokesperson",
-    "PR intern", "קשרי תקשורת",
+    'יחסי ציבור OR יח"צ OR דוברות OR דובר OR דוברת OR "קשרי תקשורת"',
+    '"public relations" OR "media relations" OR spokesperson OR "PR coordinator"',
+    '"PR account" OR "PR intern" OR "communications coordinator" OR "PR associate"',
 ]
 LINKEDIN_TIME_FILTER = "r86400"   # 24 שעות אחרונות (r3600=שעה, r604800=שבוע)
 
