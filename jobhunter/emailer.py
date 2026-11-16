@@ -132,7 +132,7 @@ def write_preview(html: str, path: Path) -> Path:
 
 def send(subject: str, html: str, text: Optional[str] = None) -> None:
     user = os.environ["GMAIL_USER"]
-    pw = os.environ["GMAIL_APP_PASSWORD"]
+    pw = os.environ["GMAIL_APP_PASSWORD"].replace(" ", "").replace(" ", "").strip()
     to = os.environ["ALERT_TO"]
     msg = EmailMessage()
     msg["Subject"] = subject
