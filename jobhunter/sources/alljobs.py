@@ -49,18 +49,26 @@ def parse(html: str) -> List[Job]:
 def fetch() -> List[Job]:
     found = {}
     errors = []
+    n = 0
     for i, q in enumerate(config.BOARD_QUERIES):
-        if i:
-            polite_sleep()
-        try:
-            r = http_get(SEARCH % quote_plus(q))
-            if r.status_code != 200:
-                errors.append("%s: HTTP %d" % (q, r.status_code))
-                continue
-            for j in parse(r.text):
-                found.setdefault(j.id, j)
-        except Exception as e:  # noqa: BLE001
-            errors.append("%s: %s" % (q, e))
+        # עמוד 2 רק לשאילתות המרכזיות (שלוש הראשונות), כדי לא להאריך את ההרצה
+        for page in range(1, (config.EXTRA_PAGES if i < 3 else 1) + 1):
+            if n:
+                polite_sleep(-config.REQUEST_DELAY + 0.7)
+            n += 1
+            try:
+                r = http_get((SEARCH % quote_plus(q)).replace("page=1", "page=%d" % page, 1))
+                if r.status_code != 200:
+                    errors.append("%s: HTTP %d" % (q, r.status_code))
+                    break
+                got = parse(r.text)
+                for j in got:
+                    found.setdefault(j.id, j)
+                if not got:
+                    break
+            except Exception as e:  # noqa: BLE001
+                errors.append("%s: %s" % (q, e))
+                break
     if not found and errors:
         raise RuntimeError("; ".join(errors[:3]))
     return list(found.values())

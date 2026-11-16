@@ -69,6 +69,39 @@ def parse_relative(text: str, now: Optional[datetime] = None) -> Optional[dateti
     return None
 
 
+def pr_relevant(*texts: str) -> bool:
+    """סינון מקדים: האם אחד הטקסטים מכיל מונח יחצ/תקשורת מ-config.PR_PREFILTER."""
+    from ..scoring import norm, hits  # ייבוא מאוחר למניעת מעגליות
+    t = norm(" . ".join(x or "" for x in texts))
+    return bool(hits(config.PR_PREFILTER, t))
+
+
+def parse_date(text: str) -> Optional[datetime]:
+    """'15-11-2026' / '15/11/2026' / '15/11/26' / 'היום' / ISO -> datetime (או None)."""
+    if not text:
+        return None
+    t = _BIDI.sub("", text).strip()
+    m = re.search(r"(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})", t)
+    if m:
+        d, mo, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        y += 2000 if y < 100 else 0
+        try:
+            return datetime(y, mo, d)
+        except ValueError:
+            return None
+    m = re.match(r"\d{4}-\d{2}-\d{2}", t)
+    if m:
+        try:
+            return datetime.fromisoformat(t[:19])
+        except ValueError:
+            return None
+    return parse_relative(t)
+
+
+def too_old(dt: Optional[datetime], days: int) -> bool:
+    return dt is not None and (datetime.now() - dt) > timedelta(days=days)
+
+
 _PHONE_RE = re.compile(
     r"(?<![\d-])(?:\+972[-\s]?|972[-\s]?|0)(?:5\d|[23489]|7\d)[-\s]?\d{3}[-\s]?\d{4}(?!\d)"
 )

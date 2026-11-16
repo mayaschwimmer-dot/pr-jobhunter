@@ -35,12 +35,35 @@ GREENHOUSE_BOARDS = {
     "similarweb": "Similarweb", "gongio": "Gong", "pagaya": "Pagaya",
     "jfrog": "JFrog", "nice": "NICE", "forter": "Forter",
     "yotpo": "Yotpo", "appsflyer": "AppsFlyer",
+    "wizinc": "Wiz", "axonius": "Axonius", "orcasecurity": "Orca Security",
+    "via": "Via",
 }
 # מהמשרות בלוחות האלה נשארות רק כאלה שהכותרת שלהן מכילה אחד מהמונחים (סינון מקדים)
 BOARD_TITLE_PREFILTER = [
     "pr", "public relations", "communications", "communication", "comms",
     "media", "press", "spokes", "content", "social", "brand", "יחצ",
     "יחסי ציבור", "דובר", "תקשורת", "תוכן",
+]
+
+# ---------------------------------------------------------------- מקורות נוספים
+# ערוצי טלגרם ציבוריים (תצוגת web ללא התחברות: t.me/s/<ערוץ>) -> שם תצוגה
+TELEGRAM_CHANNELS = {
+    "israel_media_industry": "אנדר קונטרול - דרושים בתקשורת",
+    "TheMisrot": "משרות - ביטחון וממשל",
+    "PMO_jobs": "משרד ראש הממשלה - דרושים",
+}
+TELEGRAM_MAX_AGE_DAYS = 14     # פוסטים ישנים יותר - מתעלמים
+BOARD_MAX_AGE_DAYS = 30        # לוחות בלי תפוגה (תעשיה וכד') - משרות ישנות מתעלמים
+EXTRA_PAGES = 2                # דרושים / אולג'ובס: כמה עמודי תוצאות לכל שאילתה
+
+# סינון מקדים למקורות רחבים (טלגרם, לוחות מדיה, מכרזי רשויות): נשארות רק משרות
+# שבכותרת/בטקסט יש להן אחד המונחים. בלי זה כל פוסט היה נכנס לניקוד כרעש.
+PR_PREFILTER = [
+    "יחסי ציבור", "יחצ", "יחצן", "יחצנית", "דוברות", "דובר", "דוברת", "תקשורת",
+    "קשרי עיתונות", "קשרי ממשל", "קשרי קהילה",
+    "public relations", "media relations", "spokes", "communications",
+    "communication", "comms", "pr", "press", "publicist", "public affairs",
+    "קופירייטר", "סושיאל", "social media", "content", "תוכן",
 ]
 
 # ---------------------------------------------------------------- ניקוד
@@ -131,6 +154,10 @@ NEGATIVE_TITLE_TERMS = [
     "developer", "מפתח", "מפתחת", "engineer", "מהנדס", "מהנדסת", "נהג",
     "חשבונאי", "הנהלת חשבונות", "קופאי", "מלצר",
     "טכנאי", "טכנאית", "technician", "מכרז", "מזכיר רפואי",
+    # "תקשורת" במובן טלקום/קלינאות - לא יח"צ
+    "קלינאי", "קלינאית", "קלינאות", "מערכות תקשורת", "תשתיות תקשורת", "רשתות תקשורת",
+    "תקשורת נתונים", "טכנאי תקשורת", "מתקין", "סיבים", "noc", "presale", "pre-sale",
+    "פריסייל", "back office", "בק אופיס", "network", "telecom", "סלולר",
     "עורך דין", "עורכת דין", "lawyer", "attorney", "legal counsel", "paralegal",
 ]
 NEGATIVE_TITLE_PENALTY = 30
