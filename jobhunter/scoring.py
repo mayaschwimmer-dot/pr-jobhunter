@@ -93,7 +93,7 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
     pr_signal = False
     if core_t:
         score += config.TITLE_CORE_WEIGHT
-        parts.append((config.TITLE_CORE_WEIGHT, "כותרת תואמת יחסי ציבור/דוברות"))
+        parts.append((config.TITLE_CORE_WEIGHT, "כותרת תואמת יח\"צ/דוברות/ייעוץ תקשורת"))
         pr_signal = True
     elif comms_t:
         score += config.TITLE_COMMS_WEIGHT
