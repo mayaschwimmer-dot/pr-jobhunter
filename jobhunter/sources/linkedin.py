@@ -104,13 +104,20 @@ def enrich(job: Job) -> bool:
         # רמת בכירות/סוג משרה משמשים לניקוד
         desc = desc + "\n" + " | ".join(crit)
     job.description = desc
-    # צוות הגיוס / מפרסם המשרה - רק אם מופיע בעמוד הציבורי
-    for a in soup.select("a[href*='linkedin.com/in/']"):
+    # דף החברה (לקישור "אנשי גיוס בחברה" מדויק)
+    ca = soup.select_one("a[href*='linkedin.com/company/']")
+    if ca:
+        m = re.search(r"linkedin\.com/company/([^/?#]+)", ca["href"])
+        if m:
+            job.company_url = "https://www.linkedin.com/company/" + m.group(1)
+    # המגייס/ת שפרסמ/ה את המשרה - רק אם מופיע בעמוד הציבורי (בערך ב-60% מהמשרות)
+    block = soup.select_one(".message-the-recruiter") or soup
+    for a in block.select("a[href*='linkedin.com/in/']"):
         name = _txt(a)
-        if name and len(name) < 80:
+        m = re.search(r"linkedin\.com/in/([^/?#]+)", a["href"])
+        if name and len(name) < 80 and m:
             job.recruiter_name = name
-            p = urlparse(a["href"])
-            job.recruiter_url = "%s://%s%s" % (p.scheme, p.netloc, p.path)
+            job.recruiter_url = "https://www.linkedin.com/in/" + m.group(1)
             break
     job.phones = extract_phones(desc)
     job.emails = extract_emails(desc)

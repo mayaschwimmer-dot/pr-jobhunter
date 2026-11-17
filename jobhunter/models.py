@@ -18,6 +18,7 @@ class Job:
     description: str = ""
     recruiter_name: str = ""
     recruiter_url: str = ""
+    company_url: str = ""      # דף החברה בלינקדאין (אם ידוע)
     phones: List[str] = field(default_factory=list)
     # שדות עזר
     emails: List[str] = field(default_factory=list)

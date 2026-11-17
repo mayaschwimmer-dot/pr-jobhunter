@@ -51,10 +51,19 @@ def _contact_html(job: Job) -> str:
     if job.recruiter_name:
         name = escape(job.recruiter_name)
         if job.recruiter_url:
-            rows.append('<div>איש קשר במשרה: <a href="%s" style="color:#0a66c2">%s</a></div>'
+            rows.append('<div><b>👤 המגייס/ת שפרסמ/ה את המשרה: <a href="%s" style="color:#0a66c2">%s</a></b></div>'
                         % (escape(job.recruiter_url, True), name))
         else:
-            rows.append("<div>איש קשר במשרה: %s</div>" % name)
+            rows.append("<div><b>👤 המגייס/ת: %s</b></div>" % name)
+    if job.company_url:
+        # דף "אנשים" של החברה בלינקדאין, מסונן - מציג רק עובדי החברה עצמה
+        base = job.company_url.rstrip("/") + "/people/?keywords="
+        rows.append(
+            '<div>🔎 בחברה עצמה: <a href="%s" style="color:#0a66c2">מגייסים</a>'
+            ' &nbsp;|&nbsp; <a href="%s" style="color:#0a66c2">משאבי אנוש / גיוס</a>'
+            ' &nbsp;|&nbsp; <a href="%s" style="color:#0a66c2">Talent Acquisition</a></div>'
+            % (escape(base + quote("recruiter"), True), escape(base + quote("גיוס"), True),
+               escape(base + quote("talent acquisition"), True)))
     if job.phones:
         rows.append("<div>טלפון: %s</div>" % " , ".join(
             '<a href="tel:%s" style="color:#0a66c2">%s</a>' % (escape(p, True), escape(p))
