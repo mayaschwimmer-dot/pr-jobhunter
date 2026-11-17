@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import smtplib
 from datetime import datetime
 from email.message import EmailMessage
@@ -72,6 +73,20 @@ def _contact_html(job: Job) -> str:
         rows.append("<div>מייל: %s</div>" % " , ".join(
             '<a href="mailto:%s" style="color:#0a66c2">%s</a>' % (escape(e, True), escape(e))
             for e in job.emails))
+    if job.source == "אולג'ובס":
+        # הגשה דרך אולג'ובס דורשת לעיתים מנוי VIP - קישורים למציאת אותה משרה במקום חינמי
+        t = re.sub(r"\s*/\s*(?:ית|ת|ה)\b", "", job.title)
+        t = re.sub(r"^(?:דרוש(?:ים|ה|ות)?\s*)", "", t).strip()
+        comp = job.company if job.company and "חסוי" not in job.company else ""
+        g = quote('"%s" %s -alljobs' % (t[:60], comp))
+        li = quote(t[:60])
+        rows.append(
+            '<div style="background:#fff8e1;padding:6px 8px;border-radius:6px;margin-top:4px">'
+            '💡 אולג\'ובס עשוי לדרוש מנוי VIP להגשה. אותה משרה במקום אחר: '
+            '<a href="https://www.google.com/search?q=%s" style="color:#0a66c2">גוגל</a>'
+            ' &nbsp;|&nbsp; <a href="https://www.linkedin.com/jobs/search/?keywords=%s&location=Israel" style="color:#0a66c2">לינקדאין</a>'
+            ' &nbsp;|&nbsp; <a href="https://www.drushim.co.il/jobs/search/%s/" style="color:#0a66c2">דרושים</a></div>'
+            % (g, li, li))
     company = job.company
     if company and "חסוי" not in company:
         rows.append(
