@@ -118,6 +118,7 @@ def build_html(jobs: List[Job]) -> str:
 <tr><td dir="rtl" style="padding:6px 4px 14px 4px;text-align:right">
   <div style="font-size:22px;font-weight:bold;color:#202124">נמצאו %(n)d משרות חדשות בתחום יחסי ציבור ותקשורת</div>
   <div style="font-size:12px;color:#80868b">%(now)s &middot; ממוין לפי ציון התאמה</div>
+  <div style="font-size:12px;color:#80868b;margin-top:4px">מקרא: 75+ = יח"צ/דוברות + ג'וניור + באזור &middot; 55–74 = יח"צ באזור, בלי סימני ג'וניור &middot; 40–54 = תפקיד קרוב (ייעוץ תקשורת, תוכן, ניהול)</div>
 </td></tr>
 <tr><td>%(cards)s</td></tr>
 <tr><td dir="rtl" style="font-size:11px;color:#80868b;text-align:center;padding:8px">הציון מחושב לפי מילות מפתח וכללים בלבד. הקישורים לחיפוש אנשי גיוס הם קישורי חיפוש ציבוריים בלינקדאין.</td></tr>

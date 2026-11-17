@@ -13,7 +13,10 @@ _GENDER = re.compile(r"\s*[/(]\s*(?:ית|ים|ות|ת|ה)\s*\)?(?![א-ת])")
 _HEB = re.compile(r"[א-ת]")
 _LANGS = ("עברית|רוסית|ערבית|אנגלית|צרפתית|ספרדית|אמהרית|גרמנית|איטלקית|פורטוגזית"
           "|תורכית|טורקית|רומנית|שפות|שפה|סינית|הולנדית|פולנית|אוקראינית|גאורגית")
-_SPEAKER_LANG = re.compile(r"דובר(?:ת|ים|ות|י)?\s+(?:את\s+)?(?:ה|ו|ב)?(?:" + _LANGS + ")")
+# "דובר/ת רוסית/אוזבקית/..." = דובר שפה, לא דוברות. כל מילה שמסתיימת ב"ית" אחרי דובר = שפה.
+_SPEAKER_LANG = re.compile(
+    r"דובר(?:ת|ים|ות|י)?\s+(?:את\s+)?(?:ה|ו|ב)?(?:(?:" + _LANGS + r")|[א-ת]{2,}ית)(?![א-ת])"
+    r"|(?:native\s+)?[a-z]+\s+speak(?:er|ing)s?")
 
 
 def norm(text: str) -> str:
@@ -84,6 +87,7 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
     # --- התאמת תחום
     core_t = hits(config.TITLE_CORE_PR, title)
     comms_t = hits(config.TITLE_COMMS, title)
+    weak_t = hits(config.TITLE_WEAK, title)
     core_d = hits(config.TITLE_CORE_PR, desc)
     comms_d = hits(config.TITLE_COMMS, desc)
     pr_signal = False
@@ -95,6 +99,9 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
         score += config.TITLE_COMMS_WEIGHT
         parts.append((config.TITLE_COMMS_WEIGHT, "כותרת בתחום תקשורת/תוכן"))
         pr_signal = True
+    elif weak_t:
+        score += config.TITLE_WEAK_WEIGHT
+        parts.append((config.TITLE_WEAK_WEIGHT, "המילה 'תקשורת' בכותרת"))
     if core_d:
         score += config.DESC_CORE_WEIGHT
         parts.append((config.DESC_CORE_WEIGHT, "התיאור עוסק ביחסי ציבור/דוברות"))
@@ -124,7 +131,7 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
                 and not jr_t:
             score -= config.MANAGER_PENALTY
             parts.append((-config.MANAGER_PENALTY, "תפקיד ניהולי"))
-        if hits(config.SENIOR_TERMS, desc):
+        if hits(config.SENIOR_TERMS, desc) and not jr_t:
             score -= config.SENIOR_DESC_PENALTY
             parts.append((-config.SENIOR_DESC_PENALTY, "התיאור מציין רמה בכירה"))
     years = _required_years(title + " . " + desc)
@@ -134,21 +141,21 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
         parts.append((-pen, "נדרשות %d+ שנות ניסיון" % years))
 
     # --- מיקום
+    # סינון קשיח: מיקום ידוע שאינו באזור היעד -> מתחת לסף (אלא אם עבודה מהבית מלאה)
     loc_all = loc
-    remote = bool(hits(config.REMOTE_TERMS, loc + " " + title + " " + desc[:1500]))
+    full_remote = bool(hits(config.FULL_REMOTE_TERMS, loc + " " + title + " " + desc[:1500]))
     target = hits(config.TARGET_LOCATIONS, loc_all)
+    generic = (not loc_all) or bool(re.fullmatch(config.GENERIC_LOCATION_RE, loc_all))
+    out_of_area = False
     if target:
         score += config.LOCATION_BONUS
         parts.append((config.LOCATION_BONUS, "מיקום באזור היעד"))
-    elif remote:
+    elif full_remote:
         score += config.LOCATION_BONUS
-        parts.append((config.LOCATION_BONUS, "היברידי/מרחוק"))
-    elif hits(config.FAR_LOCATIONS, loc_all):
-        score -= config.FAR_PENALTY
-        parts.append((-config.FAR_PENALTY, "מיקום רחוק"))
-    elif hits(config.OTHER_LOCATIONS, loc_all):
-        score -= config.OTHER_PENALTY
-        parts.append((-config.OTHER_PENALTY, "מחוץ לאזור היעד"))
+        parts.append((config.LOCATION_BONUS, "עבודה מהבית"))
+    elif not generic:
+        out_of_area = True
+        parts.append((-100, "מחוץ לאזור (" + (job.location or "")[:25] + ")"))
 
     # --- בונוסים
     extras = [name for name, terms in config.EXTRAS.items()
@@ -161,13 +168,14 @@ def score_job(job: Job) -> Tuple[int, List[str]]:
     # --- שליליים
     neg_t = hits(config.NEGATIVE_TITLE_TERMS, title)
     if neg_t:
-        score -= config.NEGATIVE_TITLE_PENALTY
-        parts.append((-config.NEGATIVE_TITLE_PENALTY, "תחום לא רלוונטי (" + neg_t[0] + ")"))
+        # תחום לא רלוונטי בכותרת = פסילה (לא רק קנס)
+        score = min(score - config.NEGATIVE_TITLE_PENALTY, config.NO_PR_SIGNAL_CAP)
+        parts.append((-100, "תחום לא רלוונטי (" + neg_t[0] + ")"))
     elif hits(config.NEGATIVE_DESC_TERMS, desc):
         score -= config.NEGATIVE_DESC_PENALTY
         parts.append((-config.NEGATIVE_DESC_PENALTY, "נראה כמוקד/מכירות"))
 
-    if not pr_signal:
+    if not pr_signal or out_of_area:
         score = min(score, config.NO_PR_SIGNAL_CAP)
     score = max(0, min(100, score))
 
