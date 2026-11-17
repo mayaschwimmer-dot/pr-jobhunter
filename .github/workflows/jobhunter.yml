@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
+    inputs:
+      showcase:
+        description: 'מייל ניסיון עם משרות אמיתיות (לא שומר מצב)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -38,7 +43,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
           PYTHONIOENCODING: utf-8
-        run: python -m jobhunter.main
+        run: python -m jobhunter.main ${{ inputs.showcase && '--showcase' || '' }}
 
       - name: Commit state
         run: |

@@ -85,6 +85,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="התראות משרות יח\"צ")
     ap.add_argument("--dry-run", action="store_true", help="בלי מייל ובלי שמירת מצב; כותב out/preview.html")
     ap.add_argument("--test-email", action="store_true", help="שולח מייל לדוגמה לבדיקת הגדרות")
+    ap.add_argument("--showcase", action="store_true",
+                    help="מייל ניסיון עם משרות אמיתיות: מתעלם ממשרות שכבר נשלחו ולא שומר מצב")
     args = ap.parse_args(argv)
 
     load_env(ROOT / ".env")
@@ -108,8 +110,8 @@ def main(argv=None) -> int:
         return 0
 
     jobs = fetch_all()
-    state = state_mod.prune(state_mod.load(state_path))
-    first_run = not state
+    state = {} if args.showcase else state_mod.prune(state_mod.load(state_path))
+    first_run = not state and not args.showcase
     now_iso = datetime.now(timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds")
 
     # --- דה-דופליקציה: מול המצב ובתוך ההרצה (מזהה + כותרת/חברה)
@@ -134,6 +136,11 @@ def main(argv=None) -> int:
     if first_run and not args.dry_run:
         candidates = [j for j in matches if is_recent(j, config.FIRST_RUN_HOURS)][:config.FIRST_RUN_MAX]
         print("הרצה ראשונה: הכל יסומן כנראה, במייל עד %d משרות." % len(candidates))
+    if args.showcase:
+        # 8 הטובות + עד 3 משרות לינקדאין (כדי להדגים את קישורי המגייסים)
+        candidates = matches[:8]
+        li = [j for j in new_jobs if j.source == "LinkedIn" and j not in candidates][:3]
+        candidates = candidates + li
 
     # --- העשרה (לינקדאין): תיאור + מגייס, ואז ניקוד מחדש
     enriched = 0
@@ -150,7 +157,10 @@ def main(argv=None) -> int:
             j.phones = extract_phones(j.description)
         if not j.emails:
             j.emails = extract_emails(j.description)
-    candidates = sorted((j for j in candidates if j.score >= thr), key=lambda j: -j.score)
+    if args.showcase:
+        candidates = sorted(candidates, key=lambda j: -j.score)
+    else:
+        candidates = sorted((j for j in candidates if j.score >= thr), key=lambda j: -j.score)
 
     if args.dry_run:
         print_ranking(sorted(new_jobs, key=lambda j: -j.score))
@@ -159,6 +169,8 @@ def main(argv=None) -> int:
     if candidates:
         html = emailer.build_html(candidates)
         subject = emailer.build_subject(candidates)
+        if args.showcase:
+            subject = "🧪 מייל ניסיון | " + subject
         if args.dry_run:
             p = emailer.write_preview(html, preview_path)
             print("\n[dry-run] %d משרות במייל. תצוגה: %s (לא נשלח, מצב לא נשמר)" % (len(candidates), p))
@@ -178,7 +190,7 @@ def main(argv=None) -> int:
     else:
         print("\nאין משרות חדשות מתאימות.")
 
-    if args.dry_run:
+    if args.dry_run or args.showcase:
         return 0
 
     # --- שמירת מצב: כל המשרות החדשות מסומנות כנראו (כשל בשליחה כבר יצא מוקדם)
