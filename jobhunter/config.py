@@ -22,11 +22,13 @@ LINKEDIN_QUERIES = [
     'יחסי ציבור OR יח"צ OR דוברות OR דובר OR דוברת OR "קשרי תקשורת"',
     '"public relations" OR "media relations" OR spokesperson OR "PR coordinator"',
     '"PR account" OR "PR intern" OR "communications coordinator" OR "PR associate"',
+    '"קשרי קהילה" OR "שיתוף ציבור" OR "ליווי ציבורי" OR "community relations" OR "community engagement"',
 ]
 LINKEDIN_TIME_FILTER = "r86400"   # 24 שעות אחרונות (r3600=שעה, r604800=שבוע)
 
 # שאילתות לאתרי דרושים / אולג'ובס / ג'ובמאסטר
-BOARD_QUERIES = ["יחסי ציבור", "יחצ", "דוברות", "דובר", "תקשורת", "קשרי עיתונאים"]
+BOARD_QUERIES = ["יחסי ציבור", "יחצ", "דוברות", "דובר", "תקשורת", "קשרי עיתונאים",
+                 "קשרי קהילה", "שיתוף ציבור"]
 
 # לוחות Greenhouse ציבוריים של חברות ישראליות גדולות (slug -> שם תצוגה).
 # מוסיפים בקלות: slug מופיע ב-boards.greenhouse.io/<slug>
@@ -42,7 +44,7 @@ GREENHOUSE_BOARDS = {
 BOARD_TITLE_PREFILTER = [
     "pr", "public relations", "communications", "communication", "comms",
     "media", "press", "spokes", "content", "social", "brand", "יחצ",
-    "יחסי ציבור", "דובר", "תקשורת", "תוכן",
+    "יחסי ציבור", "דובר", "תקשורת", "תוכן", "community", "קהילה", "שיתוף ציבור",
 ]
 
 # ---------------------------------------------------------------- מקורות נוספים
@@ -60,7 +62,8 @@ EXTRA_PAGES = 2                # דרושים / אולג'ובס: כמה עמוד
 # שבכותרת/בטקסט יש להן אחד המונחים. בלי זה כל פוסט היה נכנס לניקוד כרעש.
 PR_PREFILTER = [
     "יחסי ציבור", "יחצ", "יחצן", "יחצנית", "דוברות", "דובר", "דוברת", "תקשורת",
-    "קשרי עיתונות", "קשרי ממשל", "קשרי קהילה",
+    "קשרי עיתונות", "קשרי ממשל", "קשרי קהילה", "קישרי קהילה", "שיתוף ציבור",
+    "ליווי ציבורי", "הסברה", "community relations", "community engagement",
     "public relations", "media relations", "spokes", "communications",
     "communication", "comms", "pr", "press", "publicist", "public affairs",
     "קופירייטר", "סושיאל", "social media", "content", "תוכן",
@@ -77,6 +80,10 @@ TITLE_CORE_PR = [
     "יועץ תקשורת", "יועצת תקשורת", "יועצ תקשורת", "יועצי תקשורת", "ייעוץ תקשורת",
     "ייעוץ תקשורתי", "יועץ תקשורתי", "יועצת תקשורתית", "communications consultant",
     "communication consultant", "media consultant", "יועץ מדיה", "יועצת מדיה",
+    # קשרי קהילה ושיתוף ציבור = תפקיד ליבה (בין דוברות ליח"צ, למשל שילובים, CR קשרי קהילה)
+    "קשרי קהילה", "קישרי קהילה", "שיתוף ציבור", "שיתוף הציבור", "ליווי ציבורי",
+    "הסברה", "community relations", "community engagement", "public engagement",
+    "public participation",
 ]
 TITLE_CORE_WEIGHT = 50
 
@@ -120,7 +127,8 @@ SENIOR_TITLE_PENALTY = 35
 SENIOR_DESC_PENALTY = 12        # מונח בכירות בתיאור (פחות חמור)
 # קנס "מנהל/ת" בכותרת (תפקיד ניהולי), לא חל על account manager
 MANAGER_TERMS = ["מנהל", "מנהלת", "manager"]
-MANAGER_EXEMPT = ["account manager", "אקאונט מנג'ר", "office manager"]
+MANAGER_EXEMPT = ["account manager", "אקאונט מנג'ר", "office manager",
+                  "מנהל פרויקט", "מנהלת פרויקט", "מנהל פרויקטים", "project manager"]
 MANAGER_PENALTY = 15
 # קנס לפי שנות ניסיון נדרשות: {שנים מינימליות: קנס}
 YEARS_PENALTY = {3: 20, 4: 28, 5: 35}
